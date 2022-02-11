@@ -31,8 +31,13 @@ public class Client {
                     break;
                 }
 
-                message = response.readUTF();
-                System.out.println("Server says: " + message);
+                String reply = response.readUTF();
+                System.out.println("Server says: " + reply);
+
+                if ((message.equalsIgnoreCase("logout") || message.equalsIgnoreCase("shutdown"))
+                        && reply.equalsIgnoreCase("200 OK")) {
+                    break;
+                }
             }
 
             input.close();
