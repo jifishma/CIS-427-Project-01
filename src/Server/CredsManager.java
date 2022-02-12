@@ -69,12 +69,8 @@ public class CredsManager {
         return authenticatedUser;
     }
 
-    // public static void main(String[] args) {
-    //     System.out.println(CredsManager.getInstance().getAuthenticatedUser());
-
-    //     System.out.println(CredsManager.getInstance().authenticateUser("root",
-    //             "root22"));
-
-    //     System.out.println(CredsManager.getInstance().getAuthenticatedUser());
-    // }
+    public String[] getAllUsernames() {
+        return credentials.keySet()
+                .toArray(new String[credentials.keySet().size()]);
+    }
 }

@@ -2,12 +2,14 @@ package Server;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -40,7 +42,6 @@ public class Server {
         DataOutputStream response = new DataOutputStream(clientConn.getOutputStream());
 
         File solutionsFile = null;
-        Scanner solutionsFileReader = null;
 
         try {
             while (true) {
@@ -68,10 +69,8 @@ public class Server {
 
                             if (CREDS_MANAGER.authenticateUser(username, password)) {
                                 solutionsFile = new File("solutions/" + username + "_solutions.txt");
-
-                                if (solutionsFile.getParentFile().mkdir() && solutionsFile.createNewFile()) {
-                                    solutionsFileReader = new Scanner(solutionsFile);
-                                }
+                                solutionsFile.getParentFile().mkdir();
+                                solutionsFile.createNewFile();
 
                                 response.writeUTF("SUCCESS");
                             } else {
@@ -115,21 +114,25 @@ public class Server {
                         }
 
                         // solve.
-                        double area;
-                        double perimeter;
+                        Double area = null;
+                        Double perimeter = null;
                         if (isRectangle) {
                             if (b != null) {
                                 area = a * b;
                                 perimeter = 2 * (a + b);
                             }
 
-                            response.writeUTF("Placeholder");
+                            String solution = MessageFormat.format("{0, number, #.##} {1, number, #.##}", area,
+                                    perimeter);
+                            response.writeUTF(solution);
                             break;
                         } else if (isCircle) {
                             area = Math.PI * Math.pow(a, 2);
                             perimeter = 2 * Math.PI * a;
 
-                            response.writeUTF("Placeholder");
+                            String solution = MessageFormat.format("{0, number, #.##} {1, number, #.##}", area,
+                                    perimeter);
+                            response.writeUTF(solution);
                             break;
                         }
 
@@ -138,8 +141,34 @@ public class Server {
                     case "list":
                         String authedUser = CREDS_MANAGER.getAuthenticatedUser();
 
-                        if (args.contains("-all") && !authedUser.equalsIgnoreCase("root")) {
-                            response.writeUTF("FAILURE: This method is only accessible to the root user");
+                        if (args.contains("-all")) {
+                            if (!authedUser.equalsIgnoreCase("root")) {
+                                response.writeUTF("FAILURE: This method is only accessible to the root user");
+                                break;
+                            }
+
+                            StringBuilder result = new StringBuilder();
+
+                            for (String username : CREDS_MANAGER.getAllUsernames()) {
+                                result.append(MessageFormat.format("{0}\n", username));
+
+                                File userSolutionsFile = new File("solutions/" + username + ".txt");
+                                if (userSolutionsFile.exists()) {
+                                    try (Scanner reader = new Scanner(userSolutionsFile)) {
+                                        if (!reader.hasNextLine()) {
+                                            result.append("\tNo interactions yet.\n");
+                                            continue;
+                                        }
+
+                                        while (reader.hasNextLine()) {
+                                            result.append(MessageFormat.format("\t{0}\n", reader.nextLine()));
+                                        }
+                                    }
+                                } else {
+                                    result.append("\tNo interactions yet.\n");
+                                }
+                            }
+
                             break;
                         }
 
@@ -158,11 +187,10 @@ public class Server {
                         break;
                 }
             }
+        } catch (EOFException e) {
+            LOGGER.log(Level.WARNING, "The client's connection has dropped.");
+            return false;
         } finally {
-            if (solutionsFileReader != null) {
-                solutionsFileReader.close();
-            }
-
             clientConn.close();
         }
     }
