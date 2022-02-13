@@ -310,14 +310,16 @@ public class Server {
             return;
         }
 
-        // If we didn't find an -all flag, simply write the contents of the current user's solutions file to results
+        // If we didn't find an -all flag, simply write the contents of the current
+        // user's solutions file to results
         result.append(getSolutions(currentUser));
 
         // And return the results back to the Client
         response.writeUTF(result.toString());
     }
 
-    // Get the contents of the specified user's solutions file and return it as a String. 
+    // Get the contents of the specified user's solutions file and return it as a
+    // String.
     private static String getSolutions(String username) throws FileNotFoundException {
         StringBuilder result = new StringBuilder();
         File userSolutionsFile = new File("solutions\\" + username + "_solutions.txt");

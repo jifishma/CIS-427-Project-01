@@ -10,7 +10,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class CredsManager {
-
     private static final HashMap<String, String> credentials = new HashMap<>();
     private static final Pattern r = Pattern.compile("(?<username>^\\w*)\\s+(?<password>\\w*$)");
     private static CredsManager instance = null;
