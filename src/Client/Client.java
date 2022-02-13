@@ -4,20 +4,22 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
+import java.net.ConnectException;
 import java.net.Socket;
-import java.text.MessageFormat;
+import java.net.SocketTimeoutException;
 import java.util.Scanner;
 
 public class Client {
     private static final Logger LOGGER = System.getLogger(Client.class.getName());
     private static final String SERVER_HOST = "localhost";
     private static final int SERVER_PORT = 3000;
+    private static final int CONNECTION_TIMEOUT = 2000;
 
     public static void main(String[] args) {
         // Initialize the user's input first!
         Scanner input = new Scanner(System.in);
 
-        // Then we attempt to establish a connection to the server using a
+        // Then we attempt to establish a connection to the Server socket using a
         // try-with-resources. This ensures that the socket is closed after
         // the block exist.
         try (Socket socket = new Socket(SERVER_HOST, SERVER_PORT)) {
@@ -26,11 +28,18 @@ public class Client {
             DataInputStream response = new DataInputStream(socket.getInputStream());
             String message;
 
-            // And alert the user of which Server they connected to.
-            System.out.println(MessageFormat.format("Conection established with {0}", socket.getInetAddress()));
+            // And set the Socket's timeout value
+            socket.setSoTimeout(CONNECTION_TIMEOUT);
+
+            // At this point, we expect the Server to send a connection acknowledgement bit.
+            // If we didn't get one, the socket connection was not accepted!
+            response.readBoolean();
+
+            // If the connection was accepted, alert the user of which Server they connected to.
+            LOGGER.log(Level.INFO, "Connection established with {0}\n", socket.getInetAddress());
 
             // Then we enter a message loop that continues until the user logs out of or
-            // shuts down the server
+            // shuts down the Server
             while (true) {
                 System.out.print("C:\t");
                 message = input.nextLine();
@@ -52,11 +61,13 @@ public class Client {
             // Then close the Data Streams
             request.close();
             response.close();
+        } catch (ConnectException | SocketTimeoutException e) {
+            LOGGER.log(Level.ERROR, "Could not establish a connection with {0}\n", SERVER_HOST);
         } catch (Exception ex) {
             LOGGER.log(Level.ERROR, "Something really bad happened and the Client unexpectedly stopped.");
             ex.printStackTrace();
         } finally {
-            // Ensure we close the input stream as well
+            // Ensure we close the Client Input Stream as well
             input.close();
         }
     }

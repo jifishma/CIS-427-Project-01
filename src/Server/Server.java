@@ -60,6 +60,9 @@ public class Server {
         File solutionsFile = null;
         Writer solutionsFileWriter = null;
 
+        // Send the client a successful connection acknowledgement bit 
+        response.writeBoolean(true);
+
         // And log which Client has connected
         LOGGER.log(Level.INFO, "Connection established with {0}\n", clientConn.getInetAddress());
 
