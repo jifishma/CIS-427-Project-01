@@ -130,22 +130,31 @@ public class Server {
                         list(args, response);
                         break;
                     case "shutdown":
+                        // Exit the message loop and close everything.
                         LOGGER.log(Level.INFO, "Server shutting down.\n");
                         response.writeUTF("200 OK");
                         return true;
                     case "logout":
+                        // Logout the authenticated user and begin listening for the next client
+                        // connection.
                         CREDS_MANAGER.logoutUser();
                         response.writeUTF("200 OK");
                         return false;
                     default:
+                        // If we weren't able to match the primary command to any case in the switch,
+                        // return a 300 invalid command to the Client.
                         response.writeUTF("300 invalid command");
                         break;
                 }
             }
         } catch (EOFException | SocketException e) {
+            // If the client's connection ended suddenly, log it and let another client
+            // connect instead.
             LOGGER.log(Level.WARNING, "The client's connection has dropped.\n");
             return false;
         } finally {
+            // Once a client disconnects, log it and clean up the file writer, client
+            // connection, and Client Data Streams.
             LOGGER.log(Level.INFO, "Connection ended with {0}\n", clientConn.getInetAddress());
 
             if (solutionsFileWriter != null) {
@@ -275,44 +284,64 @@ public class Server {
         String currentUser = CREDS_MANAGER.getAuthenticatedUser();
         StringBuilder result = new StringBuilder("\n");
 
+        // Check if the arguments contains the -all flag
         if (args.contains("-all")) {
+            // If it does, check if the current user is "root"
             if (!currentUser.equalsIgnoreCase("root")) {
+                // If they're not, return a failure message to the Client and have them try
+                // again.
                 response.writeUTF("FAILURE: This method is only accessible to the root user");
                 return;
             }
 
+            // Otherwise, collect all of the usernames
             for (String username : CREDS_MANAGER.getAllUsernames()) {
+                // Write them to the results
                 result.append(MessageFormat.format("\t{0}\n", username));
-                result.append(getInteractions(username));
+
+                // And then write the contents of that user's solutions file to results.
+                result.append(getSolutions(username));
             }
 
+            // Return the results back to the Client
             response.writeUTF(result.toString());
+
+            // And let the Client submit another request.
             return;
         }
 
-        result.append(getInteractions(currentUser));
+        // If we didn't find an -all flag, simply write the contents of the current user's solutions file to results
+        result.append(getSolutions(currentUser));
+
+        // And return the results back to the Client
         response.writeUTF(result.toString());
     }
 
-    private static String getInteractions(String username) throws FileNotFoundException {
+    // Get the contents of the specified user's solutions file and return it as a String. 
+    private static String getSolutions(String username) throws FileNotFoundException {
         StringBuilder result = new StringBuilder();
         File userSolutionsFile = new File("solutions\\" + username + "_solutions.txt");
 
+        // If the solutions file exists, read it
         if (userSolutionsFile.exists()) {
             try (Scanner reader = new Scanner(userSolutionsFile)) {
+                // If the solutions file is empty, write no interactions
                 if (!reader.hasNextLine()) {
                     result.append("\t\tNo interactions yet\n");
                     return result.toString();
                 }
 
+                // Otherwise write all contents to results
                 while (reader.hasNextLine()) {
                     result.append(MessageFormat.format("\t\t{0}\n", reader.nextLine()));
                 }
             }
         } else {
+            // If the solutions file doesn't exist, write no interactions.
             result.append("\t\tNo interactions yet\n");
         }
 
+        // Return the results back as a single String.
         return result.toString();
     }
 }
