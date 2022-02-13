@@ -37,7 +37,7 @@ For the server:
 
 -   Terminology:
     -   \<\> = required argument
-    -   [ ] = optional argument
+    -   [  ] = optional argument
 -   LOGIN \<username\> \<password\>
     -   Attempt to log in to a user account with the provided credentials
 -   SOLVE \<-c | -r\> \<radius | side length\> [side length 2]
