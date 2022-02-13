@@ -2,11 +2,14 @@ package Client;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.io.IOException;
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
 import java.net.Socket;
+import java.text.MessageFormat;
 import java.util.Scanner;
 
 public class Client {
+    private static final Logger LOGGER = System.getLogger(Client.class.getName());
     private static final String SERVER_HOST = "localhost";
     private static final int SERVER_PORT = 3000;
 
@@ -18,7 +21,7 @@ public class Client {
             DataInputStream response = new DataInputStream(socket.getInputStream());
             String message;
 
-            System.out.println("Connection established with server.");
+            System.out.println(MessageFormat.format("Conection established with {0}", socket.getInetAddress()));
 
             while (true) {
                 System.out.print("C:\t");
@@ -33,7 +36,11 @@ public class Client {
                     break;
                 }
             }
-        } catch (IOException ex) {
+
+            request.close();
+            response.close();
+        } catch (Exception ex) {
+            LOGGER.log(Level.ERROR, "Something really bad happened and the Client unexpectedly stopped.");
             ex.printStackTrace();
         } finally {
             input.close();

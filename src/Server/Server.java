@@ -36,7 +36,7 @@ public class Server {
                 shutdown = runServer(clientConn);
             } while (!shutdown);
 
-            LOGGER.log(Level.INFO, "Server shut down.");
+            LOGGER.log(Level.INFO, "Server shut down.\n");
         } catch (Exception e) {
             LOGGER.log(Level.ERROR, "Something really bad happened and the Server unexpectedly stopped.");
             e.printStackTrace();
@@ -50,11 +50,13 @@ public class Server {
         File solutionsFile = null;
         Writer solutionsFileWriter = null;
 
+        LOGGER.log(Level.INFO, "Connection established with {0}\n", clientConn.getInetAddress());
+
         try {
             while (true) {
                 response.flush();
                 String message = request.readUTF();
-                LOGGER.log(Level.INFO, "[{0}]: {1}", CREDS_MANAGER.getAuthenticatedUser(), message);
+                LOGGER.log(Level.INFO, "Client Request:\t[{0}]: {1}\n", CREDS_MANAGER.getAuthenticatedUser(), message);
 
                 List<String> args = new ArrayList<>();
                 args.addAll(Arrays.asList(message.split(" ")));
@@ -64,7 +66,7 @@ public class Server {
                 // Ensure the user is logged in before executing on a command.
                 if (!command.isBlank() && !command.equals("login") && !command.equals("logout")
                         && CREDS_MANAGER.getAuthenticatedUser().equals("")) {
-                    response.writeUTF("ERROR: You must be logged in to execute this command.");
+                    response.writeUTF("ERROR: You must be logged in to execute a command.");
                     continue;
                 }
 
@@ -98,7 +100,7 @@ public class Server {
                         list(args, response);
                         break;
                     case "shutdown":
-                        LOGGER.log(Level.INFO, "Server shutting down.");
+                        LOGGER.log(Level.INFO, "Server shutting down.\n");
                         response.writeUTF("200 OK");
                         return true;
                     case "logout":
@@ -111,14 +113,18 @@ public class Server {
                 }
             }
         } catch (EOFException | SocketException e) {
-            LOGGER.log(Level.WARNING, "The client's connection has dropped.");
+            LOGGER.log(Level.WARNING, "The client's connection has dropped.\n");
             return false;
         } finally {
+            LOGGER.log(Level.INFO, "Connection ended with {0}\n", clientConn.getInetAddress());
+
             if (solutionsFileWriter != null) {
                 solutionsFileWriter.close();
             }
 
             clientConn.close();
+            request.close();
+            response.close();
         }
     }
 
