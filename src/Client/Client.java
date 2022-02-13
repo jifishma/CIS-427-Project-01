@@ -7,13 +7,13 @@ import java.net.Socket;
 import java.util.Scanner;
 
 public class Client {
-    private static final String serverHost = "localhost";
-    private static final int serverPort = 3000;
+    private static final String SERVER_HOST = "localhost";
+    private static final int SERVER_PORT = 3000;
 
     public static void main(String[] args) {
         Scanner input = new Scanner(System.in);
 
-        try (Socket socket = new Socket(serverHost, serverPort)) {
+        try (Socket socket = new Socket(SERVER_HOST, SERVER_PORT)) {
             DataOutputStream request = new DataOutputStream(socket.getOutputStream());
             DataInputStream response = new DataInputStream(socket.getInputStream());
             String message;

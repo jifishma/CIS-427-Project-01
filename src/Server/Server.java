@@ -21,14 +21,14 @@ import java.util.List;
 import java.util.Scanner;
 
 public class Server {
-    private static final Logger logger = System.getLogger(Server.class.getName());
-    private static final CredsManager credManager = CredsManager.getInstance();
-    private static final DecimalFormat df = new DecimalFormat("0.00");
-    private static final int serverPort = 3000;
+    private static final Logger LOGGER = System.getLogger(Server.class.getName());
+    private static final CredsManager CREDS_MANAGER = CredsManager.getInstance();
+    private static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat("0.00");
+    private static final int SERVER_PORT = 3000;
 
     public static void main(String[] args) {
-        try (ServerSocket serverSocket = new ServerSocket(serverPort)) {
-            logger.log(Level.INFO, "Server started.\n");
+        try (ServerSocket serverSocket = new ServerSocket(SERVER_PORT)) {
+            LOGGER.log(Level.INFO, "Server started.\n");
 
             boolean shutdown = false;
             do {
@@ -36,9 +36,9 @@ public class Server {
                 shutdown = runServer(clientConn);
             } while (!shutdown);
 
-            logger.log(Level.INFO, "Server shut down.");
+            LOGGER.log(Level.INFO, "Server shut down.");
         } catch (Exception e) {
-            logger.log(Level.ERROR, "Something really bad happened and the Server unexpectedly stopped.");
+            LOGGER.log(Level.ERROR, "Something really bad happened and the Server unexpectedly stopped.");
             e.printStackTrace();
         }
     }
@@ -54,7 +54,7 @@ public class Server {
             while (true) {
                 response.flush();
                 String message = request.readUTF();
-                logger.log(Level.INFO, "[{0}]: {1}", credManager.getAuthenticatedUser(), message);
+                LOGGER.log(Level.INFO, "[{0}]: {1}", CREDS_MANAGER.getAuthenticatedUser(), message);
 
                 List<String> args = new ArrayList<>();
                 args.addAll(Arrays.asList(message.split(" ")));
@@ -63,7 +63,7 @@ public class Server {
 
                 // Ensure the user is logged in before executing on a command.
                 if (!command.isBlank() && !command.equals("login") && !command.equals("logout")
-                        && credManager.getAuthenticatedUser().equals("")) {
+                        && CREDS_MANAGER.getAuthenticatedUser().equals("")) {
                     response.writeUTF("ERROR: You must be logged in to execute this command.");
                     continue;
                 }
@@ -74,7 +74,7 @@ public class Server {
                             String username = args.get(0);
                             String password = args.get(1);
 
-                            if (credManager.authenticateUser(username, password)) {
+                            if (CREDS_MANAGER.authenticateUser(username, password)) {
                                 solutionsFile = new File("solutions\\" + username + "_solutions.txt");
                                 solutionsFile.getParentFile().mkdir();
                                 solutionsFile.createNewFile();
@@ -98,11 +98,11 @@ public class Server {
                         list(args, response);
                         break;
                     case "shutdown":
-                        logger.log(Level.INFO, "Server shutting down.");
+                        LOGGER.log(Level.INFO, "Server shutting down.");
                         response.writeUTF("200 OK");
                         return true;
                     case "logout":
-                        credManager.logoutUser();
+                        CREDS_MANAGER.logoutUser();
                         response.writeUTF("200 OK");
                         return false;
                     default:
@@ -111,7 +111,7 @@ public class Server {
                 }
             }
         } catch (EOFException | SocketException e) {
-            logger.log(Level.WARNING, "The client's connection has dropped.");
+            LOGGER.log(Level.WARNING, "The client's connection has dropped.");
             return false;
         } finally {
             if (solutionsFileWriter != null) {
@@ -149,7 +149,7 @@ public class Server {
             writer.append(result);
             writer.append("\n");
             writer.flush();
-            
+
             response.writeUTF(result);
             return;
         }
@@ -174,7 +174,7 @@ public class Server {
 
             String solution = MessageFormat.format(
                     "Rectangle''s perimeter is {0} and area is {1}",
-                    df.format(perimeter), df.format(area));
+                    DECIMAL_FORMAT.format(perimeter), DECIMAL_FORMAT.format(area));
 
             writer.append("sides " + first + " " + second + ":\t" + solution);
             writer.append("\n");
@@ -188,7 +188,7 @@ public class Server {
 
             String solution = MessageFormat.format(
                     "Circle''s circumference is {0} and area is {1}",
-                    df.format(perimeter), df.format(area));
+                    DECIMAL_FORMAT.format(perimeter), DECIMAL_FORMAT.format(area));
 
             writer.append("radius " + first + ":\t" + solution);
             writer.append("\n");
@@ -202,7 +202,7 @@ public class Server {
     }
 
     private static void list(List<String> args, DataOutputStream response) throws IOException {
-        String currentUser = credManager.getAuthenticatedUser();
+        String currentUser = CREDS_MANAGER.getAuthenticatedUser();
         StringBuilder result = new StringBuilder("\n");
 
         if (args.contains("-all")) {
@@ -211,7 +211,7 @@ public class Server {
                 return;
             }
 
-            for (String username : credManager.getAllUsernames()) {
+            for (String username : CREDS_MANAGER.getAllUsernames()) {
                 result.append(MessageFormat.format("\t{0}\n", username));
                 result.append(getInteractions(username));
             }
