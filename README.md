@@ -1,18 +1,46 @@
 ## Getting Started
+### Building the project
+To build the project, navigate to the 'src' directory and run the following commands:
 
-Welcome to the VS Code Java world. Here is a guideline to help you get started to write Java code in Visual Studio Code.
+For the client:
+>```javac -d .\bin\ .\src\Client\*.java``` 
 
-## Folder Structure
+For the server:
+>```javac -d .\bin\ .\src\Server\*.java```
 
-The workspace contains two folders by default, where:
+### Running the project
+To run the project, run the following commands:
 
-- `src`: the folder to maintain sources
-- `lib`: the folder to maintain dependencies
+For the client:
+>```java -cp Client.Client```
 
-Meanwhile, the compiled output files will be generated in the `bin` folder by default.
+For the server:
+>```java -cp Server.Server```
 
-> If you want to customize the folder structure, open `.vscode/settings.json` and update the related settings there.
+## Available commands
+- Terminology:
+    - \<\> = required argument
+    - [ ] = optional argument
+- LOGIN \<username\> \<password\>
+    - Attempt to log in to a user account with the provided credentials
+- SOLVE \<-c | -r\> \<radius | side length\> [side length 2]
+    - If -c is specified, solve for a circle, if -r is specified, solve for a rectangle
+    - For a circle:
+        - Define a radius to solve Area and Cicumference for
+    - For a rectangle:
+        - Define one or two side lengths to solve Area and Perimeter for
+- LIST [-all]
+    - Print the current user's requested SOLVE operations and results
+    - If logged in as "root", print all of the users' requested SOLVE operations and results
+- LOGOUT
+    - Log the current user out and exit
+- SHUTDOWN
+    - Shut down the Server, log the current user out, and exit
 
-## Dependency Management
+## Example of commands
+### LOGIN
 
-The `JAVA PROJECTS` view allows you to manage your dependencies. More details can be found [here](https://github.com/microsoft/vscode-java-dependency#manage-dependencies).
+### SOLVE
+### LIST
+### LOGOUT
+### SHUTDOWN
