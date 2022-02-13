@@ -1,9 +1,12 @@
 # BEGIN JAVA IGNORE #
 
-# Compiled class file
+# Solutions files
+solutions/*.txt
+
+# Compiled class files
 *.class
 
-# Log file
+# Log files
 *.log
 
 # Package Files #
