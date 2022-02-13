@@ -37,10 +37,95 @@ For the server:
 - SHUTDOWN
     - Shut down the Server, log the current user out, and exit
 
-## Example of commands
+## Example of commands and results
 ### LOGIN
-
+```
+Conection established with localhost/127.0.0.1
+C:      login root root22 
+S:      SUCCESS
+```
 ### SOLVE
+Valid requests:
+```
+C:      solve -r 22
+S:      Rectangle's perimeter is 88.00 and area is 484.00
+
+C:      solve -r 22 33
+S:      Rectangle's perimeter is 110.00 and area is 726.00
+
+C:      solve -c 10
+S:      Circle's circumference is 62.83 and area is 314.16
+
+C:      solve -r 23.13 
+S:      Rectangle's perimeter is 92.52 and area is 535.00
+
+C:      solve -c 80.23
+S:      Circle's circumference is 504.10 and area is 20221.97
+```
+Invalid requests:
+```
+C:      solve -r
+S:      ERROR: No sides found
+
+C:      solve -c
+S:      ERROR: No radius found
+
+C:      solve -r abc
+S:      301 message format error
+
+C:      solve -c abc
+S:      301 message format error    
+```
 ### LIST
+Valid request:
+```
+C:      list        
+S:
+                sides 22.0 22.0:        Rectangle's perimeter is 88.00 and area is 484.00
+                sides 22.0 33.0:        Rectangle's perimeter is 110.00 and area is 726.00
+                radius 10.0:    Circle's circumference is 62.83 and area is 314.16
+                sides 23.13 23.13:      Rectangle's perimeter is 92.52 and area is 535.00
+                radius 80.23:   Circle's circumference is 504.10 and area is 20221.97
+                ERROR: No sides found
+                ERROR: No radius found
+```
+Requesting '-all' without root:
+```
+C:      list -all
+S:      FAILURE: This method is only accessible to the root user
+```
+Requesting '-all' as root:
+```
+C:      list -all
+S:
+        root
+                No interactions yet
+        sally
+                No interactions yet
+        john
+                sides 22.0 22.0:        Rectangle's perimeter is 88.00 and area is 484.00
+                sides 22.0 33.0:        Rectangle's perimeter is 110.00 and area is 726.00
+                radius 10.0:    Circle's circumference is 62.83 and area is 314.16
+                ERROR: No sides found
+                ERROR: No radius found
+        qiang
+                No interactions yet
+```
 ### LOGOUT
+```
+Conection established with localhost/127.0.0.1
+C:      login root root22 
+S:      SUCCESS
+
+C:      logout   
+S:      200 OK
+```
 ### SHUTDOWN
+```
+Conection established with localhost/127.0.0.1
+C:      login john john22
+S:      SUCCESS
+
+C:      shutdown
+S:      200 OK
+```
